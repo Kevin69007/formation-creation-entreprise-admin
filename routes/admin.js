@@ -1,4 +1,3 @@
-// routes/admin.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const prisma = require('../lib/prisma');
@@ -99,7 +98,7 @@ router.get('/users', async (req, res) => {
     // Formater les données pour le frontend
     const formattedUsers = users.map(user => {
       const completedLessons = user.progressions.filter(p => p.completed).length;
-      const totalLessons = prisma.titre.count(); // Total des titres disponibles
+      const totalLessons =  prisma.titre.count(); // Total des titres disponibles
       const completionRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
       return {

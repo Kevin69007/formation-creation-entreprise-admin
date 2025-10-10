@@ -18,7 +18,7 @@ app.use(helmet());
 
 // 🌍 CORS : autoriser le frontend
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost/FORMATION-CREATION-ENTREPRISE/index.html',
   credentials: true
 }));
 
