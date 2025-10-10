@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -17,15 +15,30 @@ const app = express();
 app.use(helmet());
 
 // 🌍 CORS : autoriser le frontend
+const allowedOrigins = [
+  'http://localhost',
+  'http://localhost:3000',
+  'http://127.0.0.1:5500', // si tu ouvres le HTML avec Live Server de VS Code
+  'https://formation-creation-entreprise.vercel.app', // ← ton futur frontend (ex Vercel)
+  process.env.FRONTEND_URL // ← si défini dans le .env (optionnel)
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost/FORMATION-CREATION-ENTREPRISE/index.html',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`❌ CORS bloqué pour l'origine : ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
 // 🚨 Protection contre les abus (Rate limiting)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // Limite chaque IP à 100 requêtes par fenêtre de 15 min
+  max: 100 // Limite chaque IP à 100 requêtes par 15 min
 });
 app.use(limiter);
 
@@ -33,13 +46,13 @@ app.use(limiter);
 app.use(express.json());
 
 // 📁 Définition des routes principales
-app.use('/api/auth', authRoutes);   // => /api/auth/register, /api/auth/login, etc.
-app.use('/api/users', userRoutes);  // => routes pour les utilisateurs
-app.use('/api/admin', adminRoutes); // => routes pour l'admin
+app.use('/api/auth', authRoutes);   // /api/auth/register, /login, etc.
+app.use('/api/users', userRoutes);  // utilisateurs
+app.use('/api/admin', adminRoutes); // admin
 
-// ✅ Route de test du serveur
+// ✅ Route de test
 app.get('/api/health', (req, res) => {
-    console.log(`[${new Date().toISOString()}] /api/health checked`);
+  console.log(`[${new Date().toISOString()}] /api/health checked`);
   res.json({
     message: 'Serveur en fonctionnement',
     timestamp: new Date()
