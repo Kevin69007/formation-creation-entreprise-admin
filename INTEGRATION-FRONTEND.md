@@ -14,7 +14,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
 
 ### ⚠️ Important : CORS et fichiers locaux
 
-Si vous ouvrez votre fichier HTML directement dans le navigateur (file://), vous rencontrerez des erreurs CORS. 
+Si vous ouvrez votre fichier HTML directement dans l navigateur (file://), vous rencontrerez des erreurs CORS. 
 
 **Solutions :**
 
