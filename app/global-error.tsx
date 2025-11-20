@@ -10,10 +10,12 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          <h1>Une erreur s'est produite</h1>
+        <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'system-ui' }}>
+          <h1>Erreur API</h1>
           <p>{error.message || 'Erreur inconnue'}</p>
-          <button onClick={reset}>Réessayer</button>
+          <button onClick={reset} style={{ marginTop: '10px', padding: '8px 16px', cursor: 'pointer' }}>
+            Réessayer
+          </button>
         </div>
       </body>
     </html>
