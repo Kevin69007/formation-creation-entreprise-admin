@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "clean": "node scripts/clean-cache.js",
@@ -12,7 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
-    "postinstall": "prisma generate || echo 'Prisma generate skipped: .env file may be missing'",
+    "postinstall": "npx prisma generate || echo 'Prisma generate skipped'",
     "create:admin": "tsx scripts/create-admin.ts",
     "create:users": "tsx scripts/create-fake-users.ts",
     "test:connection": "tsx scripts/test-connection.ts",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^6.19.0",
     "@prisma/client": "^6.19.0",
+    "@prisma/debug": "^6.19.0",
     "@supabase/supabase-js": "^2.83.0",
     "@types/pg": "^8.15.6",
     "bcryptjs": "^3.0.3",
