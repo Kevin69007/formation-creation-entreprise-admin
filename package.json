@@ -11,7 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate || echo 'Prisma generate skipped: .env file may be missing'",
     "create:admin": "tsx scripts/create-admin.ts",
     "create:users": "tsx scripts/create-fake-users.ts",
     "test:connection": "tsx scripts/test-connection.ts",
@@ -19,15 +19,16 @@
     "prisma:baseline": "tsx scripts/baseline-migration.ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.0.0",
-    "@prisma/client": "^7.0.0",
+    "@prisma/adapter-pg": "^6.19.0",
+    "@prisma/client": "^6.19.0",
     "@supabase/supabase-js": "^2.83.0",
     "@types/pg": "^8.15.6",
     "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
     "next": "16.0.3",
     "pg": "^8.16.3",
-    "prisma": "^7.0.0",
+    "prisma": "^6.19.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
