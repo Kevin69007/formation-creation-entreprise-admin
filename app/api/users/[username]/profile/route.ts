@@ -5,7 +5,7 @@ import { requireAuth, createUnauthorizedResponse } from '@/lib/middleware'
 // PUT /api/users/[username]/profile - Mettre à jour le profil
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     const auth = requireAuth(request)
@@ -13,7 +13,7 @@ export async function PUT(
       return createUnauthorizedResponse()
     }
 
-    const { username } = params
+    const { username } = await params
 
     // Un utilisateur peut modifier son propre profil, ou un admin peut modifier n'importe quel profil
     if (auth.username !== username && auth.role !== 'ADMIN') {
