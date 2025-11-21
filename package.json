@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "npm run prisma:generate",
+    "build": "npm run generate",
+    "generate": "prisma generate",
     "lint": "eslint",
     "clean": "node scripts/clean-cache.js",
     "prisma:generate": "prisma generate",
@@ -15,7 +16,6 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.0",
-    "prisma": "6.19.0",
     "@supabase/supabase-js": "^2.83.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "eslint": "^9",
+    "prisma": "^6.19.0",
     "tsx": "^4.20.6",
     "typescript": "^5"
   }
