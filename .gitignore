@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# Prisma generated client (should be generated on each platform)
+node_modules/.prisma
+
 # testing
 /coverage
 
