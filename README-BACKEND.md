@@ -1,6 +1,6 @@
 # Backend - Formation Création d'Entreprise
 
-Backend Next.js avec Prisma et Supabase pour la gestion de la base de données, l'authentification, les profils utilisateurs et la progression des leçons.
+Backend Express.js avec Prisma et PostgreSQL pour la gestion de la base de données, l'authentification, les profils utilisateurs et la progression des leçons.
 
 ## Configuration
 
@@ -17,7 +17,7 @@ DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-1-eu-west-2.poo
 # IMPORTANT: Utilisez db.[PROJECT_REF].supabase.co pour la connexion directe, pas le pooler
 DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
 
-# Supabase
+# Supabase (optionnel, si vous utilisez Supabase)
 NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT_REF].supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key-here"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-here"
@@ -25,10 +25,10 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-here"
 # JWT Authentication
 JWT_SECRET="your-very-secret-jwt-key-change-in-production"
 # Générer une clé : openssl rand -base64 32
+JWT_EXPIRES_IN="7d"
 
-# Next.js
-NEXTAUTH_SECRET="your-secret-key-here"
-NEXTAUTH_URL="http://localhost:3000"
+# Port du serveur Express (optionnel, par défaut 5000)
+PORT=5000
 ```
 
 ### 2. Configuration Supabase
@@ -52,9 +52,8 @@ npm run prisma:studio
 
 ## Scripts disponibles
 
-- `npm run dev` - Démarrer le serveur de développement
-- `npm run build` - Construire l'application pour la production
-- `npm run start` - Démarrer le serveur de production
+- `npm run dev` - Démarrer le serveur de développement Express
+- `npm run start` - Démarrer le serveur de production Express
 - `npm run prisma:generate` - Générer le client Prisma
 - `npm run prisma:migrate` - Créer et appliquer les migrations
 - `npm run prisma:studio` - Ouvrir Prisma Studio
@@ -64,25 +63,21 @@ npm run prisma:studio
 
 ```
 formation-entreprise-backend/
-├── app/
-│   └── api/                    # Routes API
-│       ├── auth/               # Authentification
-│       │   ├── login/          # POST - Connexion
-│       │   ├── register/       # POST - Enregistrement
-│       │   └── me/             # GET - Utilisateur actuel
-│       ├── users/              # Gestion des utilisateurs
-│       │   ├── [username]/     # GET - Profil utilisateur
-│       │   └── [username]/profile/  # PUT - Mettre à jour profil
-│       ├── progress/           # Progression des leçons
-│       └── users/              # GET/POST - Liste/Créer (admin)
-├── lib/                        # Utilitaires
-│   ├── prisma.ts              # Client Prisma
-│   ├── supabase.ts            # Clients Supabase
-│   ├── auth.ts                # Utilitaires JWT et authentification
-│   └── middleware.ts          # Middleware d'authentification
+├── routes/                     # Routes API Express
+│   ├── auth.js               # Authentification
+│   ├── users.js              # Gestion des utilisateurs
+│   ├── progress.js           # Progression des leçons
+│   └── admin.js              # Routes admin
+├── lib/                       # Utilitaires
+│   ├── db.js                 # Client Prisma
+│   ├── prisma.js             # Client Prisma alternatif
+│   └── supabase.ts           # Clients Supabase (optionnel)
+├── middleware/                # Middleware Express
+│   └── auth.js               # Middleware d'authentification
 ├── prisma/
 │   └── schema.prisma          # Schéma de base de données
-└── public/                     # Fichiers statiques
+├── scripts/                   # Scripts utilitaires
+└── server.js                  # Point d'entrée du serveur Express
 ```
 
 ## API Endpoints
@@ -136,32 +131,37 @@ Pour plus de détails sur l'intégration avec le frontend, consultez [INTEGRATIO
 
 ### Client Prisma
 
-```typescript
-import { prisma } from '@/lib/prisma'
+```javascript
+const { db } = require('./lib/db')
 
 // Exemple d'utilisation
-const users = await prisma.user.findMany()
+const users = await db.user.findMany()
 ```
 
 ### Authentification
 
-```typescript
-import { hashPassword, verifyPassword, generateToken } from '@/lib/auth'
+```javascript
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 // Hasher un mot de passe
-const hashed = await hashPassword('password123')
+const hashed = await bcrypt.hash('password123', 12)
 
 // Vérifier un mot de passe
-const isValid = await verifyPassword('password123', hashed)
+const isValid = await bcrypt.compare('password123', hashed)
 
 // Générer un token JWT
-const token = generateToken({ userId: '...', username: '...', role: '...' })
+const token = jwt.sign(
+  { userId: '...', username: '...', role: '...' },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+)
 ```
 
-### Client Supabase
+### Client Supabase (optionnel)
 
-```typescript
-import { supabase, supabaseAdmin } from '@/lib/supabase'
+```javascript
+const { supabase, supabaseAdmin } = require('./lib/supabase')
 
 // Client pour le frontend
 const { data, error } = await supabase.from('table').select('*')
@@ -193,13 +193,13 @@ VALUES (
 
 Ou utilisez un script Node.js :
 
-```typescript
-import { prisma } from './lib/prisma'
-import { hashPassword } from './lib/auth'
+```javascript
+const { db } = require('./lib/db')
+const bcrypt = require('bcryptjs')
 
 async function createAdmin() {
-  const hashedPassword = await hashPassword('admin2024')
-  await prisma.user.create({
+  const hashedPassword = await bcrypt.hash('admin2024', 12)
+  await db.user.create({
     data: {
       username: 'admin',
       email: 'admin@example.com',

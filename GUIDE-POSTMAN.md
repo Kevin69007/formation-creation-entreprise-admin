@@ -15,7 +15,7 @@ Ce guide vous explique comment tester l'API de formation entreprise avec Postman
 
 La collection utilise des variables pour faciliter les tests :
 
-- `base_url` : URL de base de l'API (par défaut: `http://localhost:3000`)
+- `base_url` : URL de base de l'API (par défaut: `http://localhost:5000`)
 - `token` : Token JWT (sauvegardé automatiquement après login)
 - `userId` : ID de l'utilisateur connecté
 - `username` : Nom d'utilisateur (par défaut: `admin`)
@@ -25,7 +25,7 @@ La collection utilise des variables pour faciliter les tests :
 1. Dans Postman, cliquez sur **Environments** (à gauche)
 2. Créez un nouvel environnement ou utilisez "Globals"
 3. Ajoutez les variables :
-   - `base_url` = `http://localhost:3000`
+   - `base_url` = `http://localhost:5000`
    - `token` = (sera rempli automatiquement après login)
    - `username` = `admin` ou `apprenant`
 
@@ -37,7 +37,7 @@ Avant de tester, assurez-vous que le serveur est démarré :
 npm run dev
 ```
 
-Le serveur sera accessible sur `http://localhost:3000`
+Le serveur sera accessible sur `http://localhost:5000` (ou le port défini dans la variable d'environnement `PORT`)
 
 ## 📋 Endpoints disponibles
 
@@ -220,7 +220,7 @@ Authorization: Bearer <votre-token>
 
 ### Le serveur ne répond pas
 - Vérifiez que le serveur est démarré : `npm run dev`
-- Vérifiez que l'URL de base est correcte : `http://localhost:3000`
+- Vérifiez que l'URL de base est correcte : `http://localhost:5000` (ou le port défini dans `PORT`)
 - Vérifiez les logs du serveur pour voir les erreurs
 
 ## 📚 Comptes de test

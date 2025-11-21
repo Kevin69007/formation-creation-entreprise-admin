@@ -31,9 +31,6 @@ function removeFile(file) {
 
 console.log('Vidage du cache...\n');
 
-// Supprimer .next
-removeDir('.next');
-
 // Supprimer node_modules/.cache
 removeDir('node_modules/.cache');
 

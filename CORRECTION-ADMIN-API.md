@@ -1,4 +1,4 @@
-# 🔧 Correction : Migration de admin/api.php vers Next.js API
+# 🔧 Correction : Migration de admin/api.php vers Express.js API
 
 ## ❌ Problème
 
@@ -26,7 +26,7 @@ from origin 'null' has been blocked by CORS policy
    http://localhost/FORMATION-CREATION-ENTREPRISE-main/admin/index.html
    ```
 
-4. **Modifiez `admin/index.html`** pour utiliser l'API Next.js au lieu de `api.php` :
+4. **Modifiez `admin/index.html`** pour utiliser l'API Express.js au lieu de `api.php` :
 
    **Ligne 635 - Remplacer :**
    ```javascript
@@ -65,7 +65,7 @@ from origin 'null' has been blocked by CORS policy
    });
    ```
 
-### Option 2 : Migrer complètement vers Next.js API
+### Option 2 : Migrer complètement vers Express.js API
 
 1. **Ajoutez `api-client.js` dans `admin/index.html`** (avant la fermeture de `</body>`) :
    ```html
@@ -74,7 +74,7 @@ from origin 'null' has been blocked by CORS policy
 
 2. **Remplacez tous les appels `api.php`** par des appels à `apiClient`
 
-3. **Vérifiez que le backend Next.js est démarré** :
+3. **Vérifiez que le backend Express.js est démarré** :
    ```bash
    cd formation-entreprise-backend
    npm run dev
@@ -156,7 +156,7 @@ const students = users.filter(user => user.role === 'STUDENT');
 
 ## 🚀 Étapes de test
 
-1. **Démarrez le backend Next.js** :
+1. **Démarrez le backend Express.js** :
    ```bash
    cd formation-entreprise-backend
    npm run dev
@@ -178,7 +178,7 @@ const students = users.filter(user => user.role === 'STUDENT');
 ## ⚠️ Important
 
 - **Ne pas ouvrir directement le fichier HTML** (double-clic) - utilisez toujours HTTP
-- **Le backend Next.js doit être démarré** sur `http://localhost:3000`
+- **Le backend Express.js doit être démarré** sur `http://localhost:5000` (ou le port défini dans `PORT`)
 - **Le token JWT doit être sauvegardé** après la connexion (géré automatiquement par `api-client.js`)
 
 ## 📚 Voir aussi

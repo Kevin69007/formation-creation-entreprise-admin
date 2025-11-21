@@ -11,7 +11,7 @@ const router = express.Router();
 // ✅ INSCRIPTION
 router.post('/register', async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    const { email, username, password, firstName, lastName, enrollmentDate } = req.body;
 
     // Vérification des champs requis
     if (!email || !username || !password) {
@@ -51,14 +51,20 @@ router.post('/register', async (req, res) => {
         email,
         username,
         password: hashedPassword,
-        role: 'APPRENANT', // valeur par défaut
+        firstName: firstName || null,
+        lastName: lastName || null,
+        enrollmentDate: enrollmentDate ? new Date(enrollmentDate) : null,
+        role: 'STUDENT', // valeur par défaut (selon le schéma Prisma)
       },
       select: {
         id: true,
         email: true,
         username: true,
+        firstName: true,
+        lastName: true,
         role: true,
         status: true,
+        enrollmentDate: true,
         createdAt: true,
         updatedAt: true
       }
@@ -67,15 +73,16 @@ router.post('/register', async (req, res) => {
     // Génération du token JWT
     const token = jwt.sign(
       { 
-        userId: user.id, 
-        email: user.email,
+        userId: user.id,
+        username: user.username,
         role: user.role
       },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
+      success: true,
       message: 'Utilisateur créé avec succès',
       token,
       user
@@ -83,73 +90,85 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur inscription:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
 
 // ✅ CONNEXION
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
+    if (!username || !password) {
       return res.status(400).json({ 
-        error: 'Email et mot de passe requis' 
+        error: 'Nom d\'utilisateur et mot de passe requis' 
       });
     }
 
-    // Recherche de l'utilisateur
-    const user = await db.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        password: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true
-      }
+    // Rechercher l'utilisateur par username ou email
+    const user = await db.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email: username },
+        ],
+      },
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Identifiants invalides' });
+      return res.status(401).json({ 
+        error: 'Nom d\'utilisateur ou mot de passe incorrect' 
+      });
     }
 
-    if (!user.status) {
-      return res.status(403).json({ error: 'Compte désactivé' });
+    // Vérifier le mot de passe
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        error: 'Nom d\'utilisateur ou mot de passe incorrect' 
+      });
     }
 
-    // Vérification du mot de passe
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Identifiants invalides' });
-    }
-
-    // Génération du token
-    const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email,
-        role: user.role
+    // Mettre à jour les informations de connexion
+    const now = new Date();
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        lastLogin: now,
+        lastActivity: now,
+        sessionCount: { increment: 1 },
+        firstLogin: user.firstLogin || now,
       },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+    });
+
+    // Générer le token JWT
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+      }
     );
 
-    // Suppression du mot de passe du retour
+    // Retourner les informations de l'utilisateur (sans le mot de passe)
     const { password: _, ...userWithoutPassword } = user;
 
-    res.json({
+    return res.status(200).json({
+      success: true,
       message: 'Connexion réussie',
       token,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
 
   } catch (error) {
-    console.error('Erreur connexion:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Error in login:', error);
+    return res.status(500).json({ 
+      error: 'Erreur lors de la connexion' 
+    });
   }
 });
 
@@ -187,6 +206,39 @@ router.get('/verify', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Erreur vérification:', error);
     res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// ✅ GET CURRENT USER (ME)
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        enrollmentDate: true,
+        firstLogin: true,
+        lastLogin: true,
+        lastActivity: true,
+        sessionCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error('Error in me:', error);
+    return res.status(500).json({ error: 'Erreur lors de la récupération du profil' });
   }
 });
 

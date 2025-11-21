@@ -33,12 +33,12 @@ NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT_REF].supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="votre-clé-anon-ici"
 SUPABASE_SERVICE_ROLE_KEY="votre-clé-service-role-ici"
 
-# Générer une clé secrète : openssl rand -base64 32
-NEXTAUTH_SECRET="votre-clé-secrète-ici"
-NEXTAUTH_URL="http://localhost:3000"
-
 # JWT Secret pour l'authentification (générer avec : openssl rand -base64 32)
 JWT_SECRET="votre-clé-jwt-secrète-ici"
+JWT_EXPIRES_IN="7d"
+
+# Port du serveur Express (optionnel, par défaut 5000)
+PORT=5000
 ```
 
 ### Étape 3 : Initialisation de la base de données
@@ -77,9 +77,9 @@ npm run create:admin admin admin@formation.com admin2024
 npm run dev
 ```
 
-Le serveur sera accessible sur [http://localhost:3000](http://localhost:3000)
+Le serveur sera accessible sur [http://localhost:5000](http://localhost:5000) (ou le port défini dans `PORT`)
 
-Les endpoints API seront disponibles sur `http://localhost:3000/api`
+Les endpoints API seront disponibles sur `http://localhost:5000/api`
 
 ## 🔐 Authentification
 
@@ -106,10 +106,11 @@ Le token est valide pendant 7 jours par défaut.
 
 ```javascript
 // Depuis votre frontend (projet principal)
-const response = await fetch('http://localhost:3000/api/users', {
+const response = await fetch('http://localhost:5000/api/users', {
   method: 'GET',
   headers: {
     'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
   },
 });
 
@@ -120,14 +121,18 @@ console.log(data.users);
 ### Créer un utilisateur
 
 ```javascript
-const response = await fetch('http://localhost:3000/api/users', {
+const response = await fetch('http://localhost:5000/api/users', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
   },
   body: JSON.stringify({
+    username: 'user123',
     email: 'user@example.com',
-    name: 'John Doe',
+    password: 'password123',
+    firstName: 'John',
+    lastName: 'Doe',
   }),
 });
 
@@ -137,9 +142,8 @@ console.log(data.user);
 
 ## 🛠️ Commandes utiles
 
-- `npm run dev` - Démarrer le serveur de développement
-- `npm run build` - Construire pour la production
-- `npm run start` - Démarrer le serveur de production
+- `npm run dev` - Démarrer le serveur de développement Express
+- `npm run start` - Démarrer le serveur de production Express
 - `npm run prisma:generate` - Régénérer le client Prisma
 - `npm run prisma:migrate` - Créer/appliquer les migrations
 - `npm run prisma:studio` - Ouvrir l'interface Prisma Studio
@@ -147,7 +151,7 @@ console.log(data.user);
 
 ## 📚 Ressources
 
-- [Documentation Next.js](https://nextjs.org/docs)
+- [Documentation Express.js](https://expressjs.com/)
 - [Documentation Prisma](https://www.prisma.io/docs)
 - [Documentation Supabase](https://supabase.com/docs)
 

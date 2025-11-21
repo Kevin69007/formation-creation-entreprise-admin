@@ -1,25 +1,25 @@
-# Guide de Migration : Admin API vers Next.js API
+# Guide de Migration : Admin API vers Express.js API
 
-Ce guide explique comment migrer le panneau d'administration de `admin/api.php` vers l'API Next.js.
+Ce guide explique comment migrer le panneau d'administration de `admin/api.php` vers l'API Express.js.
 
 ## 🔍 Problème actuel
 
 Le fichier `admin/index.html` utilise encore `api.php` qui ne fonctionne pas avec les fichiers locaux (erreur CORS `file://`).
 
-## ✅ Solution : Utiliser l'API Next.js
+## ✅ Solution : Utiliser l'API Express.js
 
-### Étape 1 : Vérifier que le backend Next.js est démarré
+### Étape 1 : Vérifier que le backend Express.js est démarré
 
 ```bash
 cd formation-entreprise-backend
 npm run dev
 ```
 
-Le serveur doit être accessible sur `http://localhost:3000`
+Le serveur doit être accessible sur `http://localhost:5000` (ou le port défini dans `PORT`)
 
 ### Étape 2 : Modifier `admin/index.html`
 
-Remplacez tous les appels à `api.php` par des appels à l'API Next.js via `api-client.js`.
+Remplacez tous les appels à `api.php` par des appels à l'API Express.js via `api-client.js`.
 
 #### Exemple : Créer un étudiant
 
@@ -194,7 +194,7 @@ Toutes les requêtes admin nécessitent un token JWT. Assurez-vous que :
 
 ## 🧪 Test
 
-1. Démarrez le backend Next.js : `npm run dev`
+1. Démarrez le backend Express.js : `npm run dev`
 2. Démarrez un serveur HTTP pour le frontend
 3. Connectez-vous en tant qu'admin
 4. Testez la création d'un étudiant
@@ -202,7 +202,7 @@ Toutes les requêtes admin nécessitent un token JWT. Assurez-vous que :
 
 ## 📝 Notes
 
-- Le fichier `api-client.js` est déjà configuré pour utiliser `http://localhost:3000/api`
-- Le middleware CORS est déjà configuré pour autoriser toutes les origines en développement
-- En production, modifiez `middleware.ts` pour restreindre les origines autorisées
+- Le fichier `api-client.js` doit être configuré pour utiliser `http://localhost:5000/api` (ou le port défini dans `PORT`)
+- Le middleware CORS est déjà configuré dans `server.js` pour autoriser toutes les origines en développement
+- En production, modifiez `server.js` pour restreindre les origines autorisées dans la configuration CORS
 

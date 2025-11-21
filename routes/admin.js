@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const prisma = require('../lib/prisma');
+const { db } = require('../lib/db');
 const { authenticateToken, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,26 +13,26 @@ router.use(authorize('ADMIN'));
 router.get('/stats', async (req, res) => {
   try {
     // Statistiques utilisateurs
-    const totalUsers = await prisma.user.count();
-    const activeUsers = await prisma.user.count({ 
+    const totalUsers = await db.user.count();
+    const activeUsers = await db.user.count({ 
       where: { status: true } 
     });
-    const totalAdmins = await prisma.user.count({ 
+    const totalAdmins = await db.user.count({ 
       where: { role: 'ADMIN' } 
     });
-    const totalApprenants = await prisma.user.count({ 
-      where: { role: 'APPRENANT' } 
+    const totalApprenants = await db.user.count({ 
+      where: { role: 'STUDENT' } 
     });
 
     // Statistiques de progression
-    const totalProgressions = await prisma.progression.count({
+    const totalProgressions = await db.progression.count({
       where: { completed: true }
     });
-    const totalTitres = await prisma.titre.count();
+    const totalTitres = await db.titre.count();
     const avgProgress = totalUsers > 0 ? Math.round((totalProgressions / (totalUsers * totalTitres)) * 100) : 0;
 
     // Modules disponibles
-    const totalModules = await prisma.module.count();
+    const totalModules = await db.module.count();
 
     res.json({
       stats: {
@@ -53,7 +53,7 @@ router.get('/stats', async (req, res) => {
 // Obtenir tous les utilisateurs avec leurs progressions
 router.get('/users', async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
+    const users = await db.user.findMany({
       select: {
         id: true,
         email: true,
@@ -98,7 +98,7 @@ router.get('/users', async (req, res) => {
     // Formater les données pour le frontend
     const formattedUsers = users.map(user => {
       const completedLessons = user.progressions.filter(p => p.completed).length;
-      const totalLessons =  prisma.titre.count(); // Total des titres disponibles
+      const totalLessons =  db.titre.count(); // Total des titres disponibles
       const completionRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
       return {
@@ -153,7 +153,7 @@ router.post('/users', async (req, res) => {
     }
 
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await db.user.findFirst({
       where: {
         OR: [
           { email },
@@ -172,12 +172,12 @@ router.post('/users', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Créer l'utilisateur
-    const user = await prisma.user.create({
+    const user = await db.user.create({
       data: {
         email,
         username,
         password: hashedPassword,
-        role: 'APPRENANT',
+        role: 'STUDENT',
         status: true
       },
       select: {
@@ -208,7 +208,7 @@ router.put('/users/:id', async (req, res) => {
     const { firstName, lastName, email, username, status } = req.body;
 
     // Vérifier si l'utilisateur existe
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await db.user.findUnique({
       where: { id }
     });
 
@@ -218,7 +218,7 @@ router.put('/users/:id', async (req, res) => {
 
     // Vérifier les doublons (sauf l'utilisateur actuel)
     if (email || username) {
-      const duplicateUser = await prisma.user.findFirst({
+      const duplicateUser = await db.user.findFirst({
         where: {
           AND: [
             { id: { not: id } },
@@ -240,7 +240,7 @@ router.put('/users/:id', async (req, res) => {
     }
 
     // Mettre à jour l'utilisateur
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await db.user.update({
       where: { id },
       data: {
         ...(email && { email }),
@@ -275,7 +275,7 @@ router.delete('/users/:id', async (req, res) => {
     const { id } = req.params;
 
     // Vérifier si l'utilisateur existe
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await db.user.findUnique({
       where: { id }
     });
 
@@ -289,7 +289,7 @@ router.delete('/users/:id', async (req, res) => {
     }
 
     // Supprimer l'utilisateur (les relations seront supprimées via CASCADE)
-    await prisma.user.delete({
+    await db.user.delete({
       where: { id }
     });
 
@@ -306,7 +306,7 @@ router.get('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -354,7 +354,7 @@ router.get('/users/:id', async (req, res) => {
     }
 
     // Calculer les statistiques de progression
-    const totalTitres = await prisma.titre.count();
+    const totalTitres = await db.titre.count();
     const completedLessons = user.progressions.filter(p => p.completed).length;
     const completionRate = totalTitres > 0 ? Math.round((completedLessons / totalTitres) * 100) : 0;
 
@@ -395,7 +395,7 @@ router.get('/users/:id', async (req, res) => {
 // Exporter les données en CSV
 router.get('/export/csv', async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
+    const users = await db.user.findMany({
       select: {
         username: true,
         email: true,

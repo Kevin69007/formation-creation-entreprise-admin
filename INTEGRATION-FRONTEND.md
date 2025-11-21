@@ -1,20 +1,20 @@
 # Guide d'Intégration Frontend
 
-Ce guide explique comment intégrer le backend Next.js avec votre frontend existant.
+Ce guide explique comment intégrer le backend Express.js avec votre frontend existant.
 
 ## Configuration
 
 ### URL du Backend
 
-Par défaut, le backend tourne sur `http://localhost:3000`. Assurez-vous que le backend est démarré avant d'utiliser ces API.
+Par défaut, le backend tourne sur `http://localhost:5000` (ou le port défini dans la variable d'environnement `PORT`). Assurez-vous que le backend est démarré avant d'utiliser ces API.
 
 ```javascript
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 ```
 
 ### ⚠️ Important : CORS et fichiers locaux
 
-Si vous ouvrez votre fichier HTML directement dans l navigateur (file://), vous rencontrerez des erreurs CORS. 
+Si vous ouvrez votre fichier HTML directement dans le navigateur (file://), vous rencontrerez des erreurs CORS. 
 
 **Solutions :**
 
@@ -31,9 +31,9 @@ Si vous ouvrez votre fichier HTML directement dans l navigateur (file://), vous 
    ```
    Puis accédez à votre fichier via `http://localhost:8080/index.html`
 
-2. **Le middleware CORS est déjà configuré** dans `middleware.ts` pour autoriser toutes les origines en développement.
+2. **Le middleware CORS est déjà configuré** dans `server.js` pour autoriser toutes les origines en développement.
 
-3. **Pour la production**, modifiez `middleware.ts` pour restreindre aux origines autorisées.
+3. **Pour la production**, modifiez `server.js` pour restreindre aux origines autorisées dans la configuration CORS.
 
 ## Authentification
 

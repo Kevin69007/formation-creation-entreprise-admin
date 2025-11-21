@@ -29,6 +29,7 @@ const authenticateToken = async (req, res, next) => {
 
     req.user = {
       userId: decoded.userId,
+      username: decoded.username || decoded.email, // Support pour les anciens tokens
       email: decoded.email,
       role: decoded.role
     };
